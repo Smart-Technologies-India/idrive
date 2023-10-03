@@ -3,16 +3,15 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../service/service.dart';
+final buyServiceState =
+    ChangeNotifierProvider<BuyServiceState>((ref) => BuyServiceState());
 
-final rtoServiceState =
-    ChangeNotifierProvider<RtoServiceState>((ref) => RtoServiceState());
-
-class RtoServiceState extends ChangeNotifier {
+class BuyServiceState extends ChangeNotifier {
   List<bool> selService = [];
   List<String> prices = [];
   dynamic priObj;
 
+  int serviceIdIindex = 0;
   int baseFees = 0;
   double discount = 0;
   int discountPer = 0;
@@ -24,7 +23,39 @@ class RtoServiceState extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<dynamic> agentData = [];
+  void initPricesObj(dynamic value) {
+    baseFees = 0;
+    discount = 0;
+    discountPer = 0;
+    total = 0;
+    seletedItems = 0;
+    serviceIdIindex = 0;
+    priObj = value;
+    notifyListeners();
+  }
+
+  void intiSelService(int value) {
+    selService = [];
+    for (int i = 0; i < value; i++) {
+      selService.add(false);
+    }
+    notifyListeners();
+  }
+
+  void initPrices(List value) {
+    prices = [];
+
+    for (int i = 0; i < value.length; i++) {
+      prices.add((double.parse(value[i]["baseFeeMrp"]) +
+              double.parse(value[i]["govtFee"]) +
+              double.parse(value[i]["iDriveComm"]) +
+              double.parse(value[i]["lateFee"]) +
+              double.parse(value[i]["counterFee"]) +
+              double.parse(value[i]["taxPer"]))
+          .toString());
+    }
+    notifyListeners();
+  }
 
   void changeService(bool val, int index) {
     selService[index] = val;
@@ -54,41 +85,28 @@ class RtoServiceState extends ChangeNotifier {
     }
 
     total = baseFees - discount.round();
+
+    getServiceIndex();
+
     notifyListeners();
   }
 
-  Future<void> submit(int rto, int serviceClass) async {
-    baseFees = 0;
-    discount = 0;
-    discountPer = 0;
-    total = 0;
-    seletedItems = 0;
-    final req = {
-      "f": "findAgentService1",
-      "serviceCategoryId": serviceClass.toString(),
-      "rtoId": rto.toString()
-    };
-
-    final data = await ApiHandler().post(req);
-    agentData = data["data"][0];
-    priObj = data["data"][1];
-
-    selService = [];
-    for (int i = 0; i < agentData.length; i++) {
-      selService.add(false);
-    }
-
-    prices = [];
-    for (int i = 0; i < agentData.length; i++) {
-      final pri = double.parse(agentData[i]["govtFee"]) +
-          double.parse(agentData[i]["lateFee"]) +
-          double.parse(agentData[i]["counterFee"]) +
-          double.parse(agentData[i]["taxPer"]) +
-          double.parse(agentData[i]["baseFeeMrp"]) +
-          double.parse(agentData[i]["iDriveComm"]);
-      prices.add(pri.toString());
-    }
-
+  void getServiceIndex() {
+    serviceIdIindex = selService.indexOf(true);
     notifyListeners();
+  }
+
+  String getServiceName(dynamic service) {
+    String servicesName = "";
+    for (int i = 0; i < selService.length; i++) {
+      if (selService[i]) {
+        if (i == (selService.length - 1)) {
+          servicesName += "${service[i]["title"]}";
+        } else {
+          servicesName += ", ${service[i]["title"]}";
+        }
+      }
+    }
+    return servicesName;
   }
 }

@@ -25,6 +25,7 @@ const String HEADER_APP_DOMAIN = "com.bluelemontech.chohan.idrive";
 const String WEBSITE_URL = "http://www.idriveindia.com/";
 const String BASE_URL =
     "https://bluelemontech.in/websites/idriveindia.com/app/api/api.php";
+// const String BASE_URL = "http://192.168.2.204/idriveindia.com/app/api/api.php";
 
 // const String BASE_URL = "http://localhost:80/app/api/api.php";
 
@@ -425,33 +426,33 @@ Future<dynamic> getDeviceInfo() async {
   DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setString('deviceToken', deviceToken);
-  try {
-    String? loginString = prefs.getString('login');
-    if (loginString.runtimeType == Null ||
-        loginString.toString().trim().isEmpty ||
-        loginString.toString().trim() == "null" ||
-        loginString.toString().trim() == "na") {
+
+  String? loginString = prefs.getString('login');
+  if (loginString.runtimeType == Null ||
+      loginString.toString().trim().isEmpty ||
+      loginString.toString().trim() == "null" ||
+      loginString.toString().trim() == "na") {
+  } else {
+    dynamic login = await jsonDecode(loginString!);
+    if (login == null || login.runtimeType == Null) {
     } else {
-      dynamic login = await jsonDecode(loginString!);
-      if (login == null || login.runtimeType == Null) {
+      if (login['Id'] == null ||
+          login['Id'].runtimeType == Null ||
+          double.tryParse(login['Id'].toString()).runtimeType == Null) {
       } else {
-        if (login['Id'] == null ||
-            login['Id'].runtimeType == Null ||
-            double.tryParse(login['Id'].toString()).runtimeType == Null) {
-        } else {
-          loggedInUserId =
-              double.parse(login['Id'].toString()).toStringAsFixed(0);
-        }
-        if (login['contact'] == null ||
-            login['contact'].runtimeType == Null ||
-            double.tryParse(login['contact'].toString()).runtimeType == Null) {
-        } else {
-          loggedInContact =
-              double.parse(login['contact'].toString()).toStringAsFixed(0);
-        }
+        loggedInUserId =
+            double.parse(login['Id'].toString()).toStringAsFixed(0);
+      }
+      if (login['contact'] == null ||
+          login['contact'].runtimeType == Null ||
+          double.tryParse(login['contact'].toString()).runtimeType == Null) {
+      } else {
+        loggedInContact =
+            double.parse(login['contact'].toString()).toStringAsFixed(0);
       }
     }
-  } catch (exErr01) {}
+  }
+
   try {
     if (Platform.isAndroid) {
       await prefs.setString('platform', '2');

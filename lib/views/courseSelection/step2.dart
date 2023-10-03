@@ -1,4 +1,3 @@
-
 import 'package:carpage/views/courseSelection/setp3.dart';
 import 'package:carpage/service/service.dart';
 import 'package:flutter/material.dart';
@@ -8,12 +7,14 @@ class Step2 extends HookWidget {
   final String course;
   final String vehicle;
   final String nofoninday;
-  const Step2(
-      {Key? key,
-      required this.course,
-      required this.vehicle,
-      required this.nofoninday})
-      : super(key: key);
+  final String timerange;
+  const Step2({
+    Key? key,
+    required this.course,
+    required this.vehicle,
+    required this.nofoninday,
+    required this.timerange,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,13 +22,42 @@ class Step2 extends HookWidget {
 
     ValueNotifier<List> courseData = useState([]);
 
+    String getCourseId() {
+      switch (course) {
+        case "beginner":
+          {
+            return "1";
+          }
+        case "advance":
+          {
+            return "2";
+          }
+        case "expert":
+          {
+            return "3";
+          }
+
+        case "refresh":
+          {
+            return "4";
+          }
+        default:
+          {
+            return "1";
+          }
+      }
+    }
+
     Future<dynamic> getGroup() async {
       try {
-        // log(course.toString());
-        // log(vehicle.toString());
-        // log(nofoninday.toString());
         return await ApiHandler().post(
-          {'f': 'getCarGroup', 'course': course, 'vehicle': vehicle},
+          {
+            'f': 'findCarGroup',
+            'id': "1", // user address id
+            'type': vehicle, // vehicle type hatch back, sedan
+            'slot': nofoninday, // 0 = 30 min 1 = 60 min
+            'courseId': getCourseId(), // advance expert
+          },
         );
       } catch (custErrExcptn) {
         return {
@@ -88,7 +118,7 @@ class Step2 extends HookWidget {
                     padding: EdgeInsets.all(20.0),
                     child: Center(
                         child: Text(
-                      "No Data",
+                      "No car matches your selection",
                       textScaleFactor: 1,
                       style:
                           TextStyle(fontSize: 30, fontWeight: FontWeight.w500),
@@ -122,7 +152,7 @@ class Step2 extends HookWidget {
                                   padding:
                                       const EdgeInsets.only(top: 8, left: 8),
                                   child: Text(
-                                    courseData.value[i]["vehicleName"],
+                                    courseData.value[i]["makeModel"],
                                     textScaleFactor: 1,
                                     style: const TextStyle(
                                         fontSize: 20,
@@ -135,7 +165,7 @@ class Step2 extends HookWidget {
                                   child: Row(
                                     children: [
                                       Text(
-                                        "Year: ${courseData.value[i]["yearOfManufacture"]}",
+                                        "Year: ${courseData.value[i]["year"]}",
                                         textScaleFactor: 1,
                                         style: TextStyle(
                                             color:
@@ -220,7 +250,7 @@ class Step2 extends HookWidget {
                           child: Row(
                             children: [
                               Text(
-                                "Starts from: \u{20B9}${courseData.value[i]["fees"]}",
+                                "Starts from: \u{20B9}${courseData.value[i]["minFee"]}",
                                 textScaleFactor: 1,
                                 style: const TextStyle(
                                     fontSize: 18, fontWeight: FontWeight.w500),
@@ -235,12 +265,15 @@ class Step2 extends HookWidget {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => Step3(
-                                          course:
-                                              course.toString().toLowerCase(),
-                                          carName: courseData.value[i]
-                                                  ["vehicleName"]
-                                              .toString()
-                                              .toLowerCase()),
+                                        course: course.toString().toLowerCase(),
+                                        carName: courseData.value[i]
+                                                ["makeModel"]
+                                            .toString()
+                                            .toLowerCase(),
+                                        nofoninday: nofoninday,
+                                        timerange: timerange,
+                                        vehicle: vehicle,
+                                      ),
                                     ),
                                   );
                                 },

@@ -1,3 +1,4 @@
+import 'dart:developer';
 
 import 'package:carpage/views/courseSelection/step4.dart';
 import 'package:carpage/service/service.dart';
@@ -7,9 +8,18 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 class Step3 extends HookWidget {
   final String course;
   final String carName;
+  final String nofoninday;
+  final String timerange;
+  final String vehicle;
 
-  const Step3({Key? key, required this.course, required this.carName})
-      : super(key: key);
+  const Step3({
+    Key? key,
+    required this.course,
+    required this.carName,
+    required this.nofoninday,
+    required this.timerange,
+    required this.vehicle,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +27,43 @@ class Step3 extends HookWidget {
 
     ValueNotifier<List> courseData = useState([]);
 
+    String getCourseId() {
+      switch (course) {
+        case "beginner":
+          {
+            return "1";
+          }
+        case "advance":
+          {
+            return "2";
+          }
+        case "expert":
+          {
+            return "3";
+          }
+
+        case "refresh":
+          {
+            return "4";
+          }
+        default:
+          {
+            return "1";
+          }
+      }
+    }
+
     Future<dynamic> getGroup() async {
       try {
         return await ApiHandler().post(
-          {'f': 'getCarDetail', 'course': course, 'vehicle': carName},
+          {
+            'f': 'findCarModels',
+            'id': "1",
+            'type': vehicle,
+            'model': carName,
+            "courseId": getCourseId(),
+            "slot": nofoninday,
+          },
         );
       } catch (custErrExcptn) {
         return {
@@ -32,7 +75,7 @@ class Step3 extends HookWidget {
 
     void initList() async {
       dynamic res = await getGroup();
-
+      log(res.toString());
       if (res["status"]) {
         courseData.value = res["data"];
       }
@@ -83,7 +126,7 @@ class Step3 extends HookWidget {
                   padding: EdgeInsets.all(20.0),
                   child: Center(
                     child: Text(
-                      "No Data",
+                      "No car matches your selection",
                       textScaleFactor: 1,
                       style:
                           TextStyle(fontSize: 30, fontWeight: FontWeight.w500),
@@ -94,13 +137,13 @@ class Step3 extends HookWidget {
               for (int i = 0; i < courseData.value.length; i++) ...[
                 Container(
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 10),
-                      ],
-                      color: Colors.white),
+                    borderRadius: BorderRadius.circular(5),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withOpacity(0.2), blurRadius: 10),
+                    ],
+                    color: Colors.white,
+                  ),
                   margin:
                       const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                   child: Column(
@@ -119,30 +162,22 @@ class Step3 extends HookWidget {
                                   padding:
                                       const EdgeInsets.only(top: 8, left: 8),
                                   child: Text(
-                                    courseData.value[i]["vhclName"],
+                                    "${courseData.value[i]["makeModel"]} - [${courseData.value[i]["variant"]}]",
                                     textScaleFactor: 1,
                                     style: const TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.w500),
                                   ),
                                 ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 8),
-                                  child: Text(
-                                    courseData.value[i]["crsName"],
-                                    textScaleFactor: 1,
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black.withOpacity(0.65)),
-                                  ),
+                                const SizedBox(
+                                  height: 6,
                                 ),
                                 Padding(
                                   padding:
                                       const EdgeInsets.symmetric(horizontal: 8),
                                   child: Text(
-                                    (courseData.value[i]["ac"] == 1.toString())
+                                    (courseData.value[i]["acNonAc"] ==
+                                            1.toString())
                                         ? "\u2022 AC"
                                         : "\u2022 Non-Ac",
                                     textScaleFactor: 1,
@@ -156,7 +191,7 @@ class Step3 extends HookWidget {
                                   padding:
                                       const EdgeInsets.symmetric(horizontal: 8),
                                   child: Text(
-                                    (courseData.value[i]["duoCtrl"] ==
+                                    (courseData.value[i]["dualControl"] ==
                                             1.toString())
                                         ? "\u2022 Dual control"
                                         : "\u2022 Non-Dual Control",
@@ -171,7 +206,7 @@ class Step3 extends HookWidget {
                                   padding:
                                       const EdgeInsets.symmetric(horizontal: 8),
                                   child: Text(
-                                    (courseData.value[i]["autoTrsmn"] ==
+                                    (courseData.value[i]["transmission"] ==
                                             1.toString())
                                         ? "\u2022 Automatic"
                                         : "\u2022 Manual",
@@ -193,7 +228,7 @@ class Step3 extends HookWidget {
                                   child: Row(
                                     children: [
                                       Text(
-                                        "Date: ${courseData.value[i]["dt"]}",
+                                        "Year: ${courseData.value[i]["year"]}",
                                         textScaleFactor: 1,
                                         style: TextStyle(
                                             color:
@@ -239,7 +274,7 @@ class Step3 extends HookWidget {
                               ],
                             )),
                             if (courseData.value[i]["picUrl"] == "" ||
-                                courseData.value[i]["vhclPicUrl"] == null) ...[
+                                courseData.value[i]["picUrl"] == null) ...[
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
                                 child: Image.asset(
@@ -253,7 +288,7 @@ class Step3 extends HookWidget {
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
                                 child: Image.network(
-                                  courseData.value[i]["vhclPicUrl"],
+                                  courseData.value[i]["picUrl"],
                                   height: 100,
                                   width: 140,
                                   fit: BoxFit.cover,
@@ -271,78 +306,75 @@ class Step3 extends HookWidget {
                         child: Row(
                           children: [
                             Text(
-                              "Starts from: \u{20B9}${courseData.value[i]["fees"]}",
+                              "Starts from: \u{20B9}${courseData.value[i]["minFee"]}",
                               textScaleFactor: 1,
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.w500),
                             ),
                             const Spacer(),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xff10b981),
-                              ),
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    contentPadding: const EdgeInsets.all(10),
-                                    titlePadding: const EdgeInsets.all(10),
-                                    title: const Center(
-                                      child: Text("More Info"),
-                                    ),
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          courseData.value[i]["crsDsc"]
-                                              .toString()
-                                              .replaceAll("// ", "\n"),
-                                          textScaleFactor: 1,
-                                          style: const TextStyle(
-                                              fontSize: 18,
-                                              color: Colors.black),
-                                        ),
-                                        Center(
-                                          child: ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  const Color(0xff06b6d4),
-                                            ),
-                                            child: const Text("OK"),
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: const Text("Info"),
-                            ),
+                            // ElevatedButton(
+                            //   style: ElevatedButton.styleFrom(
+                            //     backgroundColor: const Color(0xff10b981),
+                            //   ),
+                            //   onPressed: () {
+                            //     showDialog(
+                            //       context: context,
+                            //       builder: (context) => AlertDialog(
+                            //         contentPadding: const EdgeInsets.all(10),
+                            //         titlePadding: const EdgeInsets.all(10),
+                            //         title: const Center(
+                            //           child: Text("More Info"),
+                            //         ),
+                            //         content: Column(
+                            //           mainAxisSize: MainAxisSize.min,
+                            //           children: [
+                            //             Text(
+                            //               courseData.value[i]["crsDsc"]
+                            //                   .toString()
+                            //                   .replaceAll("// ", "\n"),
+                            //               textScaleFactor: 1,
+                            //               style: const TextStyle(
+                            //                   fontSize: 18,
+                            //                   color: Colors.black),
+                            //             ),
+                            //             Center(
+                            //               child: ElevatedButton(
+                            //                 style: ElevatedButton.styleFrom(
+                            //                   backgroundColor:
+                            //                       const Color(0xff06b6d4),
+                            //                 ),
+                            //                 child: const Text("OK"),
+                            //                 onPressed: () {
+                            //                   Navigator.pop(context);
+                            //                 },
+                            //               ),
+                            //             )
+                            //           ],
+                            //         ),
+                            //       ),
+                            //     );
+                            //   },
+                            //   child: const Text("Info"),
+                            // ),
                             const Spacer(),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: themcol,
                               ),
                               onPressed: () {
-                                // log(courseData.value[i]["agntId"].toString());
-                                // log(courseData.value[i]["crsId"].toString());
-                                // log(courseData.value[i]["vhclId"].toString());
                                 Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => Step4(
-                                        type: 1,
-                                        ageId: courseData.value[i]["agntId"]
-                                            .toString(),
-                                        curId: courseData.value[i]["crsId"]
-                                            .toString(),
-                                        vehId: courseData.value[i]["vhclId"]
-                                            .toString(),
-                                      ),
-                                    ));
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Step4(
+                                      id: courseData.value[i]["id"].toString(),
+                                      agentId: courseData.value[i]["agentId"]
+                                          .toString(),
+                                      type: nofoninday.toString(),
+                                      slot: timerange.toString(),
+                                      course: getCourseId(),
+                                    ),
+                                  ),
+                                );
                               },
                               child: const Text("Continue"),
                             ),

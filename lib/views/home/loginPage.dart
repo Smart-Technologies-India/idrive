@@ -323,7 +323,8 @@ class _LoginPageState extends State<LoginPage> {
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                     tapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap, backgroundColor: const Color(0xffFACC15)),
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    backgroundColor: const Color(0xffFACC15)),
                                 onPressed: () async {
                                   var res = await validateSplash();
 

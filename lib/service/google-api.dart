@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -56,9 +57,8 @@ class GoogleApiHandler {
         }
       });
     } catch (exErr) {
-      print(
-          '\n================================>service.google-api.dart resolveLatLng Exception');
-      print(exErr);
+      log('\n================================>service.google-api.dart resolveLatLng Exception');
+      log(exErr.toString());
       return {'status': false, 'data': {}, 'message': ("EX : $exErr")};
     }
   }
@@ -169,17 +169,22 @@ class GoogleApiHandler {
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         return true;
       } else {
-        if (context.runtimeType == Null || isSilent == false) {
+        if (isSilent == false) {
         } else {
-          showAlertDialog(
-              context, ("Unable to Reach $GOOGLE_MAP_DOMAIN_CHECK"));
+          if (context.mounted) {
+            showAlertDialog(
+                context, ("Unable to Reach $GOOGLE_MAP_DOMAIN_CHECK"));
+          }
         }
         return false;
       }
     } on SocketException catch (_) {
-      if (context.runtimeType == Null || isSilent == false) {
+      if (isSilent == false) {
       } else {
-        showAlertDialog(context, ("Unable to Reach $GOOGLE_MAP_DOMAIN_CHECK"));
+        if (context.mounted) {
+          showAlertDialog(
+              context, ("Unable to Reach $GOOGLE_MAP_DOMAIN_CHECK"));
+        }
       }
       return false;
     }

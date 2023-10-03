@@ -55,8 +55,6 @@ class ApiHandler {
       return checkInternetAccess().then((resCheckInternet) {
         if (resCheckInternet == true) {
           return getDeviceInfo().then((value) {
-            // log(BASE_URL.toString());
-            // log(body.toString());
             return http
                 .post(
               Uri.parse(BASE_URL.toString()),

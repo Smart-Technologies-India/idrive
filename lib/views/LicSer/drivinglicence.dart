@@ -25,7 +25,7 @@ class DrivingLicence extends HookWidget {
     ValueNotifier docData = useState([]);
     final isSubmit = useState(false);
 
-    final ValueNotifier<String?> stossub = useState(null);
+    // final ValueNotifier<String?> stossub = useState(null);
     final serviceList = useState([]);
 
     int serviceId = 3;

@@ -24,7 +24,7 @@ import '../LicSer/dlrenewal.dart';
 import '../LicSer/drivinglicence.dart';
 import '../LicSer/duplicatedl.dart';
 import '../LicSer/learnerlience.dart';
-import '../courseSelection/selectCourse.dart';
+import '../courseSelection/select_course.dart';
 import '../gift.dart';
 import '../userservices/mainfirstaid.dart';
 import '../userservices/questionbank.dart';
